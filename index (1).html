@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Alain Perez — Python · DevSecOps · Cloud</title>
+<meta name="description" content="Alain Perez — software developer and security engineer in training. Five years of critical-care operations, now building in Python, cloud, and DevSecOps." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ── Tokens ───────────────────────────────────────────────
+     Palette derives from a patient telemetry monitor: slate
+     bezel, channel colors per vital sign. Cyan = SpO2 lane
+     (live/verified). Amber = caution lane (in progress).
+     Magenta = pressure lane (accent, used once).            */
+  :root {
+    --bezel:      #0d151f;
+    --panel:      #131e2b;
+    --panel-hi:   #1a2836;
+    --rule:       #24384a;
+    --ink:        #e6eef5;
+    --ink-dim:    #8ba3b8;
+    --ink-faint:  #566b7e;
+    --spo2:       #38d3d3;
+    --caution:    #f2b544;
+    --pressure:   #e0609a;
+
+    --display: 'Archivo', system-ui, sans-serif;
+    --body:    'IBM Plex Sans', system-ui, sans-serif;
+    --mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+    --gut: clamp(1.25rem, 4vw, 3rem);
+    --maxw: 1080px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bezel);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--spo2); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  :focus-visible {
+    outline: 2px solid var(--spo2);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gut); }
+
+  /* ── Channel label: the eyebrow is a monitor lane tag ──── */
+  .channel {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0 0 1.5rem;
+  }
+  .channel::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  section { padding: clamp(3.5rem, 8vw, 6rem) 0; }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 0.75rem;
+  }
+
+  .lede { color: var(--ink-dim); max-width: 62ch; margin: 0 0 2.5rem; }
+
+  /* ── Hero ──────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    padding: clamp(4rem, 12vw, 8rem) 0 clamp(3rem, 6vw, 4.5rem);
+    border-bottom: 1px solid var(--rule);
+    overflow: hidden;
+  }
+
+  .trace {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 140px;
+    width: 100%;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .trace path {
+    fill: none;
+    stroke: var(--spo2);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 2400;
+    stroke-dashoffset: 2400;
+    animation: sweep 9s linear infinite;
+    filter: drop-shadow(0 0 6px rgba(56, 211, 211, 0.5));
+  }
+  @keyframes sweep { to { stroke-dashoffset: -2400; } }
+
+  .hero-inner { position: relative; z-index: 1; }
+
+  .status {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--spo2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+  .pulse {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--spo2);
+    box-shadow: 0 0 0 0 rgba(56, 211, 211, 0.6);
+    animation: beat 2.2s ease-out infinite;
+  }
+  @keyframes beat {
+    0%   { box-shadow: 0 0 0 0 rgba(56, 211, 211, 0.55); }
+    70%  { box-shadow: 0 0 0 9px rgba(56, 211, 211, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(56, 211, 211, 0); }
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(2.6rem, 8vw, 5rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    margin: 0 0 1.25rem;
+    font-stretch: expanded;
+  }
+
+  .role {
+    font-family: var(--mono);
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    color: var(--ink-dim);
+    letter-spacing: 0.02em;
+    margin: 0 0 2rem;
+  }
+  .role b { color: var(--ink); font-weight: 500; }
+
+  .thesis {
+    font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+    line-height: 1.6;
+    max-width: 58ch;
+    margin: 0 0 2.5rem;
+    color: var(--ink);
+  }
+  .thesis em {
+    font-style: normal;
+    color: var(--spo2);
+    border-bottom: 1px solid rgba(56, 211, 211, 0.35);
+  }
+
+  .links { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+  .links a {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--ink);
+    background: var(--panel);
+    transition: border-color 0.18s, color 0.18s, transform 0.18s;
+  }
+  .links a:hover {
+    border-color: var(--spo2);
+    color: var(--spo2);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  /* ── Signature: the translation lanes ──────────────────── */
+  .lanes {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .lane-head {
+    display: grid;
+    grid-template-columns: 1fr 2.2rem 1fr;
+    background: var(--panel-hi);
+    border-bottom: 1px solid var(--rule);
+  }
+  .lane-head span {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0.85rem 1.2rem;
+  }
+  .lane-head span:nth-child(2) { padding: 0.85rem 0; }
+
+  .lane {
+    display: grid;
+    grid-template-columns: 1fr 2.2rem 1fr;
+    align-items: center;
+    border-top: 1px solid var(--rule);
+    transition: background 0.18s;
+  }
+  .lane:first-of-type { border-top: none; }
+  .lane:hover { background: var(--panel-hi); }
+
+  .lane div { padding: 1rem 1.2rem; font-size: 0.94rem; }
+  .lane .from { color: var(--ink-dim); }
+  .lane .to   { color: var(--ink); font-weight: 500; }
+  .lane .arrow {
+    padding: 1rem 0;
+    text-align: center;
+    color: var(--spo2);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    opacity: 0.65;
+  }
+
+  @media (max-width: 620px) {
+    .lane-head { display: none; }
+    .lane { grid-template-columns: 1fr; padding: 0.4rem 0; }
+    .lane div { padding: 0.35rem 1.1rem; }
+    .lane .arrow { text-align: left; padding: 0 1.1rem; }
+    .lane .from::before {
+      content: 'CLINICAL / ';
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+    }
+    .lane .to::before {
+      content: 'TECHNICAL / ';
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+    }
+  }
+
+  /* ── Skills ────────────────────────────────────────────── */
+  .stack { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+  .row {
+    background: var(--panel);
+    padding: 1.15rem 1.3rem;
+    display: grid;
+    grid-template-columns: minmax(130px, 180px) 1fr;
+    gap: 1.2rem;
+    align-items: baseline;
+  }
+  .row dt {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .row dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 2px;
+    background: var(--panel-hi);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+  }
+  .tag.learning {
+    color: var(--caution);
+    border-color: rgba(242, 181, 68, 0.3);
+    background: rgba(242, 181, 68, 0.06);
+  }
+
+  @media (max-width: 620px) {
+    .row { grid-template-columns: 1fr; gap: 0.7rem; }
+  }
+
+  /* ── Credentials ───────────────────────────────────────── */
+  .creds { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  @media (max-width: 800px) { .creds { grid-template-columns: 1fr; } }
+
+  .card {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--panel);
+    padding: 1.4rem 1.4rem 1.6rem;
+  }
+  .card > h3 {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin: 0 0 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card.verified > h3 { color: var(--spo2); }
+  .card.pending  > h3 { color: var(--caution); }
+  .card > p {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    margin: 0 0 1.1rem;
+  }
+  .card ul { list-style: none; margin: 0; padding: 0; }
+  .card li {
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-dim);
+  }
+  .card li:first-child { border-top: none; }
+  .card li b { color: var(--ink); font-weight: 500; }
+  .card li span {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .verified .dot { background: var(--spo2); }
+  .pending  .dot { background: var(--caution); }
+
+  /* ── Projects ──────────────────────────────────────────── */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  @media (max-width: 860px) { .grid3 { grid-template-columns: 1fr; } }
+
+  .proj {
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    padding: 1.4rem;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: border-color 0.18s;
+  }
+  .proj:hover { border-color: var(--ink-faint); }
+  .proj h3 {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .proj p { margin: 0; font-size: 0.88rem; color: var(--ink-dim); }
+  .proj .meta {
+    margin-top: auto;
+    padding-top: 0.9rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Footer ────────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 3rem 0;
+    color: var(--ink-faint);
+    font-size: 0.85rem;
+  }
+  .foot-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  footer .mono { font-family: var(--mono); font-size: 0.78rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    .trace path { stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══════════════════════════════════════════════ -->
+<header class="hero">
+  <svg class="trace" viewBox="0 0 1200 140" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,100 L180,100 L200,100 L210,72 L222,118 L234,40 L246,100 L268,100 L420,100
+             L438,100 L450,88 L462,100 L620,100 L640,100 L652,72 L664,118 L676,40 L688,100
+             L710,100 L880,100 L898,100 L910,88 L922,100 L1080,100 L1100,100 L1112,72
+             L1124,118 L1136,40 L1148,100 L1200,100" />
+  </svg>
+
+  <div class="wrap hero-inner">
+    <div class="status"><span class="pulse"></span>Open to work · Remote / Madrid</div>
+
+    <h1>Alain<br>Perez</h1>
+
+    <p class="role">
+      <b>Python</b> · <b>DevOps</b> · <b>DevSecOps</b> · <b>Cloud</b>
+      &nbsp;—&nbsp; MSIT · MSN Informatics · MBA · RN
+    </p>
+
+    <p class="thesis">
+      For five years I monitored critical systems around the clock, triaged alerts by
+      severity, escalated on protocol, and documented every action for audit. Then I
+      learned that this job has <em>another name in tech</em> — and spent 20+ certifications
+      getting there.
+    </p>
+
+    <nav class="links" aria-label="Contact and profiles">
+      <a href="https://github.com/AlainPDev">GitHub ↗</a>
+      <a href="#stack">Stack</a>
+      <a href="#credentials">Credentials</a>
+      <a href="#projects">Projects</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══ SIGNATURE: TRANSLATION LANES ══════════════════════ -->
+<section id="translate">
+  <div class="wrap">
+    <p class="channel">Same job, different uniform</p>
+    <h2>The career change is narrower than it looks</h2>
+    <p class="lede">
+      Critical care and security operations are the same discipline wearing different
+      badges. Here's the mapping, one to one.
+    </p>
+
+    <div class="lanes">
+      <div class="lane-head">
+        <span>What I did in the hospital</span>
+        <span></span>
+        <span>What it's called in tech</span>
+      </div>
+
+      <div class="lane">
+        <div class="from">Watched telemetry across a full unit, 24/7, on rotating shifts</div>
+        <div class="arrow">→</div>
+        <div class="to">Continuous monitoring &amp; alert triage</div>
+      </div>
+      <div class="lane">
+        <div class="from">Sorted alarms by severity; escalated to the right team on protocol</div>
+        <div class="arrow">→</div>
+        <div class="to">Incident response &amp; escalation paths</div>
+      </div>
+      <div class="lane">
+        <div class="from">Enforced who could see which records, under HIPAA, every shift</div>
+        <div class="arrow">→</div>
+        <div class="to">Least privilege &amp; access control</div>
+      </div>
+      <div class="lane">
+        <div class="from">Charted every action so it would survive an audit years later</div>
+        <div class="arrow">→</div>
+        <div class="to">Documentation, runbooks &amp; evidence trails</div>
+      </div>
+      <div class="lane">
+        <div class="from">Ran root-cause review after adverse events, then changed the process</div>
+        <div class="arrow">→</div>
+        <div class="to">Post-incident review &amp; remediation</div>
+      </div>
+      <div class="lane">
+        <div class="from">Learned a new hospital's entire system stack in under a week, repeatedly</div>
+        <div class="arrow">→</div>
+        <div class="to">Ramping fast on unfamiliar codebases</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STACK ═════════════════════════════════════════════ -->
+<section id="stack">
+  <div class="wrap">
+    <p class="channel">Stack</p>
+    <h2>What I build with</h2>
+    <p class="lede">
+      Amber marks what I'm actively learning right now, not what I already ship.
+      I'd rather you know which is which.
+    </p>
+
+    <dl class="stack">
+      <div class="row">
+        <dt>Languages</dt>
+        <dd>
+          <span class="tag">Python</span>
+          <span class="tag">Bash</span>
+          <span class="tag">PowerShell</span>
+          <span class="tag">SQL</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Web</dt>
+        <dd>
+          <span class="tag">HTML</span>
+          <span class="tag">CSS</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Platforms</dt>
+        <dd>
+          <span class="tag">Linux</span>
+          <span class="tag">Windows Server</span>
+          <span class="tag">AWS</span>
+          <span class="tag">Azure</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Build &amp; ship</dt>
+        <dd>
+          <span class="tag">Git</span>
+          <span class="tag">GitHub</span>
+          <span class="tag learning">GitHub Actions</span>
+          <span class="tag learning">Docker</span>
+          <span class="tag learning">Terraform</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Security</dt>
+        <dd>
+          <span class="tag">Wireshark</span>
+          <span class="tag">Burp Suite</span>
+          <span class="tag">SIEM / QRadar</span>
+          <span class="tag">Nmap</span>
+          <span class="tag">TCP/IP</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Foundations</dt>
+        <dd>
+          <span class="tag">Data structures</span>
+          <span class="tag">Algorithms</span>
+          <span class="tag">OOP</span>
+          <span class="tag learning">Design patterns</span>
+          <span class="tag">Databases</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Ways of working</dt>
+        <dd>
+          <span class="tag">Scrum (PSM I)</span>
+          <span class="tag">ITIL v4</span>
+          <span class="tag">Six Sigma (DMAIC)</span>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Languages (human)</dt>
+        <dd>
+          <span class="tag">Spanish — native</span>
+          <span class="tag">English — native</span>
+          <span class="tag learning">French — B2</span>
+        </dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<!-- ══ CREDENTIALS ═══════════════════════════════════════ -->
+<section id="credentials">
+  <div class="wrap">
+    <p class="channel">Credentials</p>
+    <h2>Earned, and in flight</h2>
+    <p class="lede">
+      Every certification here came from self-directed study while working full-time
+      shifts. Verifiable on Credly.
+    </p>
+
+    <div class="creds">
+      <div class="card verified">
+        <h3><span class="dot"></span>Earned</h3>
+        <p>Complete and verifiable.</p>
+        <ul>
+          <li><b>Degrees</b>
+            <span>MSIT — Florida State (3.98) · MSN Nursing Informatics — WGU · MBA — FIU (3.6) · BSN — University of Miami · RN, active</span>
+          </li>
+          <li><b>Security</b>
+            <span>CompTIA Security+ · IBM Cybersecurity Analyst · CompTIA CSIS</span>
+          </li>
+          <li><b>Networking &amp; systems</b>
+            <span>Network+ · CNIP · CIOS · Server+ · A+ · ITF+ · Google IT Support</span>
+          </li>
+          <li><b>Cloud</b>
+            <span>Azure Fundamentals (AZ-900) · AWS Cloud Practitioner · Cloud Essentials+</span>
+          </li>
+          <li><b>Development</b>
+            <span>PCEP — Python Institute · Open Source SW Dev, Linux &amp; Git — Coursera</span>
+          </li>
+          <li><b>Process</b>
+            <span>PSM I · ITIL v4 Foundation · Project+ · Google PM · ASQ Six Sigma Yellow Belt</span>
+          </li>
+          <li><b>Hands-on labs</b>
+            <span>TryHackMe — Cyber Defense · Jr Penetration Tester · Red Teaming · Web Fundamentals</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card pending">
+        <h3><span class="dot"></span>In progress</h3>
+        <p>Started, not finished. Listed so you can hold me to it.</p>
+        <ul>
+          <li><b>IBM DevOps &amp; Software Engineering</b>
+            <span>Coursera — CI/CD, containers, microservices, TDD, Python app development</span>
+          </li>
+          <li><b>Software Design &amp; Architecture</b>
+            <span>University of Alberta, Coursera — OO design, design patterns, SOA</span>
+          </li>
+          <li><b>Python Essentials 1–3</b>
+            <span>OpenEDG Python Institute — advancing toward PCAP</span>
+          </li>
+          <li><b>GitHub Actions</b>
+            <span>Microsoft — CI/CD workflow automation</span>
+          </li>
+          <li><b>AZ-104</b>
+            <span>Microsoft Certified: Azure Administrator Associate</span>
+          </li>
+          <li><b>SC-500</b>
+            <span>Microsoft Certified: Cloud and AI Security Engineer Associate</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROJECTS ══════════════════════════════════════════
+     TODO — Replace each placeholder below with a real repo.
+     Keep the honest framing: what it does, why you built it,
+     what you learned. Link the repo in the <h3>.
+     Delete this whole section if it's still empty when you
+     publish — an empty projects grid reads worse than none.
+     ═══════════════════════════════════════════════════════ -->
+<section id="projects">
+  <div class="wrap">
+    <p class="channel">Projects</p>
+    <h2>Things I'm building</h2>
+    <p class="lede">
+      Coursework artifacts and small tools, shipped as I go. All code lives on
+      <a href="https://github.com/AlainPDev">GitHub</a>.
+    </p>
+
+    <div class="grid3">
+      <!-- PLACEHOLDER 1 -->
+      <article class="proj">
+        <h3>Log triage tool</h3>
+        <p>
+          A Python CLI that parses auth logs, flags brute-force patterns, and writes
+          a structured report. Built to automate the alert triage I used to do by eye.
+        </p>
+        <div class="meta">PYTHON · IN PROGRESS</div>
+      </article>
+
+      <!-- PLACEHOLDER 2 -->
+      <article class="proj">
+        <h3>Containerized app + pipeline</h3>
+        <p>
+          A small Flask service with a Dockerfile and a GitHub Actions workflow that
+          runs tests and builds the image on every push.
+        </p>
+        <div class="meta">DOCKER · GITHUB ACTIONS · IN PROGRESS</div>
+      </article>
+
+      <!-- PLACEHOLDER 3 -->
+      <article class="proj">
+        <h3>Infrastructure as code</h3>
+        <p>
+          Terraform config that provisions a locked-down cloud environment — private
+          networking, least-privilege roles, no public buckets.
+        </p>
+        <div class="meta">TERRAFORM · AWS · IN PROGRESS</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ════════════════════════════════════════════ -->
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <p style="margin:0 0 0.35rem; color:var(--ink);">Alain Perez</p>
+      <p class="mono" style="margin:0;">Melbourne, FL · Dual US / Spanish citizen · Remote or Madrid</p>
+    </div>
+    <div class="mono">
+      <a href="https://github.com/AlainPDev">github.com/AlainPDev ↗</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
